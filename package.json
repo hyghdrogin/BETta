@@ -1,0 +1,50 @@
+{
+  "name": "betta",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/app.js",
+    "dev": "nodemon src/app.ts",
+    "postinstall": "tsc",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint --fix src/**/*.ts",
+    "build": "tsc",
+    "seed": "ts-node src/seeders/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyghdrogin/BETta.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hyghdrogin/BETta/issues"
+  },
+  "homepage": "https://github.com/hyghdrogin/BETta#readme",
+  "devDependencies": {
+    "@babel/register": "^7.18.9",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.14",
+    "@types/lodash": "^4.14.188",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
+    "eslint": "^8.26.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-import-resolver-typescript": "^3.5.2",
+    "nodemon": "^2.0.20",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "joi": "^17.7.0",
+    "lodash": "^4.17.21",
+    "luxon": "^3.1.0",
+    "pino": "^8.7.0"
+  }
+}
