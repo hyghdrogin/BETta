@@ -105,4 +105,3 @@ dist
 
 # Package-lock.json file
 package-lock.json
-.sequelizerc

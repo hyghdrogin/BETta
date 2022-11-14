@@ -4,13 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts",
-    "postinstall": "tsc",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint --fix src/**/*.ts",
-    "build": "tsc",
-    "seed": "ts-node src/seeders/index.ts"
+    "clean": "npm rm -rf build && npm run build-babel",
+    "build-babel": "babel -d ./build ./src -s",
+    "build": "npm run clean && npm run build-babel",
+    "start": "npm run build && node ./build/app.js",
+    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node ./src/app.ts",
+    "lint": "eslint src/  --fix",
+    "migration": "npm run migrate:undo && npm run migrate",
+    "migrate": "npx sequelize-cli db:migrate",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "seeder": "npm run seed:undo && npm run seed",
+    "seed": "npx sequelize-cli db:seed:all",
+    "seed:undo": "npx sequelize-cli db:seed:undo"
   },
   "repository": {
     "type": "git",
@@ -24,9 +29,17 @@
   },
   "homepage": "https://github.com/hyghdrogin/BETta#readme",
   "devDependencies": {
+    "@babel/cli": "^7.19.3",
+    "@babel/core": "^7.20.2",
+    "@babel/node": "^7.20.2",
+    "@babel/plugin-transform-runtime": "^7.19.6",
+    "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.18.9",
+    "@babel/runtime": "^7.20.1",
+    "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.14",
+    "@types/jsonwebtoken": "^8.5.9",
     "@types/lodash": "^4.14.188",
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
@@ -35,16 +48,22 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-import-resolver-typescript": "^3.5.2",
     "nodemon": "^2.0.20",
+    "sequelize-cli": "^6.5.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "joi": "^17.7.0",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "luxon": "^3.1.0",
-    "pino": "^8.7.0"
+    "pg": "^8.8.0",
+    "pg-hstore": "^2.3.4",
+    "pino": "^8.7.0",
+    "sequelize": "^6.25.5"
   }
 }
