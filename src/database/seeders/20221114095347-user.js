@@ -1,3 +1,5 @@
+import { UUIDV4 } from "sequelize";
+
 const bcrypt = require("bcrypt");
 /** @type {import('sequelize-cli').Migration} */
 require("dotenv").config();
@@ -17,6 +19,7 @@ export async function up(queryInterface, Sequelize) {
   */
   return queryInterface.bulkInsert("Users", [
     {
+      id: "e1bc7da3-61fe-4ece-bbd7-7bd1a5b9dcce",
       firstName: "Emmanuel",
       lastName: "Omopariola",
       email: "hyghdrogin@betta.com",
@@ -29,6 +32,7 @@ export async function up(queryInterface, Sequelize) {
       updatedAt: new Date()
     },
     {
+      id: "c03e1a6b-58d1-4f05-9931-f8449ed62bce",
       firstName: "BETta",
       lastName: "Admin",
       email: "admin@betta.com",
