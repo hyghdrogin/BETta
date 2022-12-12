@@ -62,4 +62,34 @@ export default class UserController {
       return errorResponse(res, 500, "Server error.");
     }
   }
+
+  /**
+   * @param {object} req - The reset request object
+   * @param {object} res - The reset errorResponse object
+   * @returns {object} Success message
+   */
+  static async updateProfile(req: Request, res: Response) {
+    try {
+      const { id } = req.user;
+      const {
+        username, firstname, lastname, phone
+      } = req.body;
+      const user = await User.findOne({ where: { id } });
+      await user?.update({
+        username, firstname, lastname, phone
+      });
+      await user?.save({
+        fields: ["username", "firstname", "lastname", "phone"]
+      });
+      return successResponse(
+        res,
+        200,
+        "Profile updated Successfully.",
+        user
+      );
+    } catch (error) {
+      handleError(error, req);
+      return errorResponse(res, 500, "Server error");
+    }
+  }
 }
