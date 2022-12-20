@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
-import { errorResponse } from "../utils/responses";
+import { errorResponse, handleError } from "../utils/responses";
 import config from "../config";
 import { ITokenDetails } from "../utils/interface";
 
@@ -21,7 +21,7 @@ class Authentication {
           const credentials = parts[1];
           if (/^Bearer$/i.test(scheme)) {
             const token = credentials;
-            const { data } = await jwt.verify(token, config.JWT_KEY as string) as ITokenDetails;
+            const data = await jwt.verify(token, config.JWT_KEY as string) as ITokenDetails;
             const decoded = data;
 
             const user = await User.findOne({ where: { id: decoded.id } });
@@ -37,6 +37,7 @@ class Authentication {
         return errorResponse(res, 401, "Authorization not found");
       }
     } catch (error) {
+      handleError(error, req);
       return errorResponse(res, 500, "Server error");
     }
   }
