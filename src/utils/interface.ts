@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 export interface IUser {
     id?: string
-    username: string
+    username?: string
     firstname?: string
     lastname?: string
     email: string
@@ -11,6 +11,7 @@ export interface IUser {
     balance?: number
 }
 export interface ITokenDetails {
+    id: string
     data: IUser
 }
 export interface CustomRequest {
@@ -23,4 +24,10 @@ export interface CustomRequest {
 export interface ILogin {
   email: string
   password: string
+}
+export interface IOtp {
+  id?: string
+  email: string
+  token: number
+  expired: boolean
 }
