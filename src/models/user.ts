@@ -8,11 +8,11 @@ export default class User extends Model {
    public firstname!: string;
    public lastname!: string;
    public email!: string;
+   public verified!: boolean;
+   public active!: boolean;
    public password!: string;
    public phone!: string;
    public photo!: string;
-   public active!: boolean;
-   public verified!: boolean;
 }
 
 User.init({
@@ -50,13 +50,11 @@ User.init({
   },
   active: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false,
-    allowNull: false
+    defaultValue: true,
   },
   verified: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false,
-    allowNull: false
+    defaultValue: false
   }
 }, {
   sequelize,
