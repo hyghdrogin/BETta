@@ -15,6 +15,10 @@ Otp.init({
     defaultValue: UUIDV4,
     primaryKey: true
   },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
   email: {
     type: DataTypes.STRING, 
     allowNull: false

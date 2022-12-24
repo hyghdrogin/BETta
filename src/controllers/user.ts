@@ -27,11 +27,11 @@ export default class UserController {
       if (phoneExist) return errorResponse(res, 409, "Phone already registered by another user.");
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      await User.create({
+      const user = await User.create({
         username, firstname, lastname, email: Email, password: hashedPassword, phone
       });
       const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
-      await Otp.create({ email, token: otp });
+      await Otp.create({ email, token: otp, userId: user.id });
       const subject = "User created";
       const message = `hi, thank you for signing up kindly verify your account with this token ${otp}`;
       await sendEmail(email, subject, message);
@@ -93,7 +93,7 @@ export default class UserController {
         id, firstname, lastname, email, phone
       });
       const userDetails = {
-        email, phone, username, firstname, lastname,
+        id, email, phone, username, firstname, lastname,
       };
       return successResponse(res, 200, "Logged in successfully", { userDetails, token });
     } catch (error) {
@@ -176,6 +176,72 @@ export default class UserController {
       const hashedPassword = await bcrypt.hash(password, 10);
       await User.update({ password: hashedPassword }, { where: { email: otp.email } });
       return successResponse(res, 200, "Password reset successfully, Kindly login.");
+    } catch (error) {
+      handleError(error, req);
+      return errorResponse(res, 500, "Server error");
+    }
+  }
+
+  /**
+   * @param {object} req - The reset request object
+   * @param {object} res - The reset errorResponse object
+   * @returns {object} Success message
+   */
+  static async uploadProfilePicture(req: Request, res: Response) {
+    try {
+      const { id } = req.user;
+      const user = await User.findOne({ where: { id } });
+      await user?.update(
+        { photo: req.file?.path }
+      );
+      return successResponse(res, 200, "Picture uploaded Successfully.", user);
+    } catch (error) {
+      handleError(error, req);
+      return errorResponse(res, 500, "Server error");
+    }
+  }
+
+  /**
+   * @param {object} req - The reset request object
+   * @param {object} res - The reset errorResponse object
+   * @returns {object} Success message
+   */
+  static async deleteUser(req:Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const user = await User.findByPk(userId);
+      const token = await Otp.findOne({ where: { userId } });
+      await token?.destroy();
+      user?.destroy();
+      return successResponse(
+        res,
+        200,
+        "User Deleted Successfully."
+      );
+    } catch (error) {
+      handleError(error, req);
+      return errorResponse(res, 500, "Server error");
+    }
+  }
+
+  /**
+   * @param {object} req - The reset request object
+   * @param {object} res - The reset errorResponse object
+   * @returns {object} Success message
+   */
+  static async deactivateUser(req:Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const user = await User.findByPk(userId);
+      await user?.update({ active: false }, { where: { userId } });
+      const token = await Otp.findOne({ where: { userId } });
+      await token?.destroy();
+      return successResponse(
+        res,
+        200,
+        "User deactivated successfully.",
+        user
+      );
     } catch (error) {
       handleError(error, req);
       return errorResponse(res, 500, "Server error");

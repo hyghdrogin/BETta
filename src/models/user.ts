@@ -58,11 +58,11 @@ User.init({
     defaultValue: false,
     allowNull: false
   }
-}, {
+}, 
+{
   sequelize,
   tableName: 'users',
   timestamps: false
 });
 
 User.hasOne(Otp, { foreignKey: 'userId' });
-Otp.hasOne(User, { foreignKey: "userId"});
