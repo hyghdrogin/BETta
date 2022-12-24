@@ -239,7 +239,7 @@ export default class UserController {
       return successResponse(
         res,
         200,
-        "User deactivated successfully.",
+        "User deactivated SSuccessfully.",
         user
       );
     } catch (error) {
