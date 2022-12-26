@@ -1,12 +1,9 @@
 import { Sequelize } from "sequelize";
+import config from ".";
 
-const sequelize = new Sequelize({
+const sequelize = new Sequelize(config.SQL_URL as string, {
   dialect: "mysql",
-  host: "localhost",
-  username: "root",
-  password: "adeosun123",
-  database: "testt",
-  logging: false
+  logging: false,
 });
 
 export default sequelize;

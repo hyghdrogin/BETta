@@ -126,6 +126,12 @@ export default class UserController {
   static async updateProfile(req: Request, res: Response) {
     try {
       const { id } = req.user;
+      if (req.body.password) {
+        req.body.password = await bcrypt.hash(req.body.password, 10);
+      }
+      if (req.body.email || req.body.phone || req.body.username) {
+        return errorResponse(res, 400, "Invalid Input");
+      }
       await User.update(req.body, { where: { id } });
       return successResponse(
         res,

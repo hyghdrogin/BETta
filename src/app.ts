@@ -5,7 +5,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import config from "./config";
 import sequelize from "./config/db";
-import userRoutes from "./routes/userRoute";
+import routes from "./routes";
 import reqLogger from "./utils/reqLogger";
 import { CustomRequest } from "./utils/interface";
 
@@ -24,7 +24,7 @@ app.use(express.json());
 
 app.use(limiter);
 app.use(reqLogger);
-app.use("/users", userRoutes);
+app.use("/api", routes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to BETta app");
