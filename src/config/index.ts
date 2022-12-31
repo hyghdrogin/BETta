@@ -15,7 +15,7 @@ const config = {
   USERNAME: process.env.USERNAME as string,
   HOST: process.env.HOST as string,
   DATABASE: process.env.DATABASE as string,
-  // DIALECT: process.env.DIALECT as string,
+  PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY,
   CLOUD_NAME: process.env.CLOUD_NAME,
   API_KEY: process.env.API_KEY,
   API_SECRET: process.env.API_SECRET,

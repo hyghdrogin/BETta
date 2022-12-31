@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import { Op } from "sequelize";
 import { successResponse, errorResponse, handleError } from "../utils/responses";
-import User from "../models/user";
-import Otp from "../models/otp";
+import models from "../models";
 import jwtHelper from "../utils/jwt";
 import sendEmail from "../utils/email";
 import { IOtp } from "../utils/interface";
@@ -21,17 +21,17 @@ export default class UserController {
         username, firstname, lastname, email, password, phone
       } = req.body;
       const Email = email.toLowerCase();
-      const emailExist = await User.findOne({ where: { email } });
+      const emailExist = await models.User.findOne({ where: { email } });
       if (emailExist) return errorResponse(res, 409, "email already registered by another user.");
-      const phoneExist = await User.findOne({ where: { phone } });
+      const phoneExist = await models.User.findOne({ where: { phone } });
       if (phoneExist) return errorResponse(res, 409, "Phone already registered by another user.");
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
+      const user = await models.User.create({
         username, firstname, lastname, email: Email, password: hashedPassword, phone
       });
       const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
-      await Otp.create({ email, token: otp, userId: user.id });
+      await models.Otp.create({ email, token: otp, userId: user.id });
       const subject = "User created";
       const message = `hi, thank you for signing up kindly verify your account with this token ${otp}`;
       await sendEmail(email, subject, message);
@@ -50,12 +50,12 @@ export default class UserController {
   static async verifyAccount(req: Request, res: Response) {
     try {
       const { token } = req.body;
-      const otp: IOtp | null = await Otp.findOne({ where: { token } });
+      const otp: IOtp | null = await models.Otp.findOne({ where: { token } });
       if (!otp) { return errorResponse(res, 404, "Otp does not exist."); }
       if (otp.expired) { return errorResponse(res, 409, "Otp has already been used."); }
 
-      await User.update({ verified: true, active: true }, { where: { email: otp.email } });
-      await Otp.update({ expired: true }, { where: { email: otp.email } });
+      await models.User.update({ verified: true, active: true }, { where: { email: otp.email } });
+      await models.Otp.update({ expired: true }, { where: { email: otp.email } });
       return successResponse(
         res,
         200,
@@ -75,7 +75,11 @@ export default class UserController {
   static async login(req: Request, res: Response) {
     try {
       const { username, password } = req.body;
-      const user = await User.findOne({ where: { username } });
+      const user = await models.User.findOne({
+        where: {
+          [Op.or]: [{ email: username }, { username }]
+        }
+      });
       if (!user) return errorResponse(res, 404, "username or email not found");
       if (!user.verified) {
         return errorResponse(res, 409, "Kindly verify your account before logging in.");
@@ -89,9 +93,7 @@ export default class UserController {
       const {
         id, firstname, lastname, email, phone
       } = user;
-      const token = await generateToken({
-        id, firstname, lastname, email, phone
-      });
+      const token = await generateToken({ id, email, phone });
       const userDetails = {
         id, email, phone, username, firstname, lastname,
       };
@@ -110,7 +112,7 @@ export default class UserController {
   static async getProfile(req: Request, res: Response) {
     try {
       const { id } = req.user;
-      const user = await User.findOne({ where: { id } });
+      const user = await models.User.findOne({ where: { id } });
       return successResponse(res, 200, "User fetched successfully", user);
     } catch (error) {
       handleError(error, req);
@@ -126,13 +128,20 @@ export default class UserController {
   static async updateProfile(req: Request, res: Response) {
     try {
       const { id } = req.user;
-      if (req.body.password) {
-        req.body.password = await bcrypt.hash(req.body.password, 10);
+      const {
+        username, firstname, lastname
+      } = req.body;
+      if (!(req.body.username) || (req.body.firstname) || (req.body.lastname)) {
+        return errorResponse(res, 400, "Only Username, firstname and lastname are required.");
       }
-      if (req.body.email || req.body.phone || req.body.username) {
-        return errorResponse(res, 400, "Invalid Input");
-      }
-      await User.update(req.body, { where: { id } });
+      // const user: IUser | null = await models.User.findOne({ where: { id } });
+      // if (!user) return errorResponse(res, 404, "User not found.");
+      await models.User.update({
+        username,
+        firstname,
+        lastname
+      },
+      { where: { id } });
       return successResponse(
         res,
         200,
@@ -152,14 +161,20 @@ export default class UserController {
   static async recover(req: Request, res: Response) {
     try {
       const { email } = req.body;
-      const user = await User.findOne({ where: { email } });
-      if (!user) return errorResponse(res, 404, "Email does not exist!!!!!!");
+      const user = await models.User.findOne({ where: { email } });
+      if (!user) {
+        return errorResponse(res, 404, "Account does not exist!!!!!!");
+      }
       const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
-      await Otp.update({ token: otp, expired: false }, { where: { email } });
-      const subject = "Reset Password Otp";
+      await models.Otp.update({ token: otp, expired: false }, { where: { email } });
+      const subject = "BETta password OTP reset";
       const message = `hi, kindly use this ${otp} to reset your password`;
       await sendEmail(email, subject, message);
-      return successResponse(res, 200, "Kindly use the otp in your mail to reset your password.");
+      return successResponse(
+        res,
+        200,
+        "Kindly use the otp in your mail to reset your password."
+      );
     } catch (error) {
       handleError(error, req);
       return errorResponse(res, 500, "Server error");
@@ -174,13 +189,13 @@ export default class UserController {
   static async reset(req: Request, res: Response) {
     try {
       const { token, password, retypePassword } = req.body;
-      const otp = await Otp.findOne({ where: { token } });
+      const otp = await models.Otp.findOne({ where: { token } });
       if (!otp) { return errorResponse(res, 404, "incorrect Otp"); }
       if (password !== retypePassword) {
         return errorResponse(res, 409, "Password mismatch.");
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      await User.update({ password: hashedPassword }, { where: { email: otp.email } });
+      await models.User.update({ password: hashedPassword }, { where: { email: otp.email } });
       return successResponse(res, 200, "Password reset successfully, Kindly login.");
     } catch (error) {
       handleError(error, req);
@@ -196,7 +211,7 @@ export default class UserController {
   static async uploadProfilePicture(req: Request, res: Response) {
     try {
       const { id } = req.user;
-      const user = await User.findOne({ where: { id } });
+      const user = await models.User.findOne({ where: { id } });
       await user?.update(
         { photo: req.file?.path }
       );
@@ -212,17 +227,22 @@ export default class UserController {
    * @param {object} res - The reset errorResponse object
    * @returns {object} Success message
    */
-  static async deleteUser(req:Request, res: Response) {
+  static async deactivateUser(req:Request, res: Response) {
     try {
-      const { userId } = req.params;
-      const user = await User.findByPk(userId);
-      const token = await Otp.findOne({ where: { userId } });
-      await token?.destroy();
-      user?.destroy();
+      const { id } = req.user;
+      const user = await models.User.findOne({ where: { id } });
+      if (user?.active) {
+        await user?.update({ active: false });
+      }
+      const otp = await models.Otp.findOne({ where: { email: user?.email } });
+      if (otp) {
+        await otp.destroy();
+      }
       return successResponse(
         res,
         200,
-        "User Deleted Successfully."
+        "User deactivated Successfully.",
+        user
       );
     } catch (error) {
       handleError(error, req);
@@ -235,19 +255,51 @@ export default class UserController {
    * @param {object} res - The reset errorResponse object
    * @returns {object} Success message
    */
-  static async deactivateUser(req:Request, res: Response) {
+  static async reactivateUser(req:Request, res: Response) {
     try {
-      const { userId } = req.params;
-      const user = await User.findByPk(userId);
-      await user?.update({ active: false }, { where: { userId } });
-      const token = await Otp.findOne({ where: { userId } });
-      await token?.destroy();
+      const { email } = req.body;
+      const user = await models.User.findOne({ where: { email } });
+      if (user) {
+        const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
+        await models.Otp.create({ email, token: otp, userId: user.id });
+        const subject = "We are pleased to have you back at AlphaBET";
+        const message = `<h1>BETta</h1>
+        
+        <p>To reactivate user, please confirm your email with this OTP</p>
+        <p>${otp}</p>`;
+        await sendEmail(email, subject, message);
+      } else {
+        return errorResponse(res, 409, "You have no business here");
+      }
       return successResponse(
         res,
         200,
-        "User deactivated SSuccessfully.",
-        user
+        "OTP Sent to your mail."
       );
+    } catch (error) {
+      handleError(error, req);
+      return errorResponse(res, 500, "Server error");
+    }
+  }
+
+  /**
+   * @param {object} req - The reset request object
+   * @param {object} res - The reset errorResponse object
+   * @returns {object} Success message
+   */
+  static async welcomeBack(req: Request, res: Response) {
+    try {
+      const { otp } = req.body;
+      const otpDey: IOtp | null = await models.Otp.findOne({ where: { token: otp } });
+      console.log(otpDey?.email);
+      const user = await models.User.findOne({ where: { email: otpDey?.email } });
+      if (user) {
+        user.active = true;
+        await user.save();
+      } else {
+        return errorResponse(res, 400, "User not found");
+      }
+      return successResponse(res, 200, "Profile Picture updated Successfully.", user);
     } catch (error) {
       handleError(error, req);
       return errorResponse(res, 500, "Server error");

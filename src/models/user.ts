@@ -1,6 +1,5 @@
-import { Model, DataTypes, UUIDV4 } from 'sequelize';
-import sequelize from '../config/db';
-import Otp from './otp';
+import { Model, DataTypes, UUIDV4 } from "sequelize";
+import sequelize from "../config/db";
 
 export default class User extends Model {
    public id!: string;
@@ -13,6 +12,16 @@ export default class User extends Model {
    public password!: string;
    public phone!: string;
    public photo!: string;
+
+   static associate(models: any) {
+      User.hasOne(models.Otp, {
+         foreignKey: "userId",
+      })
+      User.hasMany(models.Credit, {
+        foreignKey: "userId",
+        as: "recipientId"
+      })
+   }
 }
 
 User.init({
@@ -59,8 +68,6 @@ User.init({
 }, 
 {
   sequelize,
-  tableName: 'users',
-  timestamps: false
+  tableName: "users",
+  timestamps: true
 });
-
-User.hasOne(Otp, { foreignKey: 'userId' });

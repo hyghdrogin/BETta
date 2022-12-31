@@ -7,6 +7,14 @@ export default class Otp extends Model {
   public email!: string;
   public token!: number;
   public expired!: boolean;
+
+  static associate(models:any) {
+    Otp.belongsTo(models.User, {
+      foreignKey: 'userId',
+      targetKey: 'id',
+      as: 'user'
+    })
+  }
 }
 
 Otp.init({
@@ -20,8 +28,8 @@ Otp.init({
     allowNull: false
   },
   email: {
-    type: DataTypes.STRING, 
-    allowNull: false
+    type: DataTypes.STRING,
+    unique: true,
   },
   token: {
     type: DataTypes.INTEGER,
@@ -30,10 +38,9 @@ Otp.init({
   expired: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
-    allowNull: false
   }
 }, {
   sequelize,
   tableName: "otps",
-  timestamps: false
+  timestamps: true
 });

@@ -47,8 +47,8 @@
     "@types/validator": "^13.7.10",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
-    "eslint": "^8.26.0",
-    "eslint-config-airbnb": "^19.0.4",
+    "eslint": "^8.30.0",
+    "eslint-config-airbnb": "^18.2.1",
     "eslint-import-resolver-typescript": "^3.5.2",
     "nodemon": "^2.0.20",
     "sequelize-cli": "^6.5.2",
@@ -58,6 +58,7 @@
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
     "@types/sequelize": "^4.28.14",
+    "axios": "^1.2.1",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "cloudinary": "^1.33.0",
