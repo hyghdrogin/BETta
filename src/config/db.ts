@@ -1,14 +1,9 @@
-import { Sequelize } from "sequelize-typescript";
-import User from "../models/user";
+import { Sequelize } from "sequelize";
+import config from ".";
 
-const connection = new Sequelize({
+const sequelize = new Sequelize(config.SQL_URL as string, {
   dialect: "mysql",
-  host: "localhost",
-  username: "root",
-  password: "adeosun123",
-  database: "testt",
   logging: false,
-  models: [User]
 });
 
-export default connection;
+export default sequelize;

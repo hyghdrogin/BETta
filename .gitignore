@@ -105,3 +105,8 @@ dist
 
 # Package-lock.json file
 package-lock.json
+
+src/controllers/credit.ts
+src/middlewares/paystack.ts
+src/models/credit.ts
+src/routes/creditRoute.ts

@@ -4,8 +4,8 @@ import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import config from "./config";
-import connection from "./config/db";
-import userRoutes from "./routes/userRoute";
+import sequelize from "./config/db";
+import routes from "./routes";
 import reqLogger from "./utils/reqLogger";
 import { CustomRequest } from "./utils/interface";
 
@@ -24,7 +24,7 @@ app.use(express.json());
 
 app.use(limiter);
 app.use(reqLogger);
-app.use("/users", userRoutes);
+app.use("/api", routes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to BETta app");
@@ -46,7 +46,7 @@ app.use((req, res) => res.status(404).send({
 (async () => {
   process.on("warning", (e) => config.logger.warn(e.stack));
   console.log("Waiting for DATABASE Connection...");
-  await connection.sync();
+  await sequelize.sync();
   app.listen(config.PORT || 4000, async () => {
     console.log(
       `${config.APP_NAME} API listening on ${port || 4000}`
