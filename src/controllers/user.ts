@@ -131,17 +131,14 @@ export default class UserController {
       const {
         username, firstname, lastname
       } = req.body;
-      if (!(req.body.username) || (req.body.firstname) || (req.body.lastname)) {
-        return errorResponse(res, 400, "Only Username, firstname and lastname are required.");
-      }
-      // const user: IUser | null = await models.User.findOne({ where: { id } });
-      // if (!user) return errorResponse(res, 404, "User not found.");
-      await models.User.update({
-        username,
-        firstname,
-        lastname
-      },
-      { where: { id } });
+      await models.User.update(
+        {
+          username,
+          firstname,
+          lastname
+        },
+        { where: { id } }
+      );
       return successResponse(
         res,
         200,
