@@ -8,7 +8,7 @@ export const validateSignup = (user: IUser) => {
     lastname: Joi.string().min(2).max(20).required(),
     email: Joi.string().email().required(),
     password: Joi.string().required().min(6).max(16),
-    phone: Joi.string().required(),
+    phone: Joi.string().required()
   });
   return schema.validate(user);
 };

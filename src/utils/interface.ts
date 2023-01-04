@@ -1,18 +1,22 @@
-/* eslint-disable @typescript-eslint/indent */
 export interface IUser {
-    id?: string
-    username?: string
-    firstname?: string
-    lastname?: string
-    email: string
-    password: string
-    phone?: string
-    photo?: string
-    balance?: number
+  id?: string
+  username?: string
+  firstname?: string
+  lastname?: string
+  phone?: string
+  dob?: string
+  email: string
+  balance?: number
+  location?: string
+  password: string
+  active?: boolean
+  verified?: boolean,
+  createdAt?: Date,
+  updatedAt?: Date,
 }
 export interface ITokenDetails {
-    id: string
-    data: IUser
+  id: string
+  data: IUser
 }
 export interface CustomRequest {
   user: IUser
@@ -22,12 +26,14 @@ export interface CustomRequest {
   path: object
 }
 export interface ILogin {
-  email: string
+  username: string
   password: string
 }
 export interface IOtp {
   id?: string
-  email: string
+  userId?: string
   token: number
   expired: boolean
+  createdAt?: Date
+  updatedAt?: Date
 }

@@ -5,7 +5,7 @@ import { successResponse, errorResponse, handleError } from "../utils/responses"
 import models from "../models";
 import jwtHelper from "../utils/jwt";
 import sendEmail from "../utils/email";
-import { IOtp } from "../utils/interface";
+import { IOtp, IUser } from "../utils/interface";
 
 const { generateToken } = jwtHelper;
 
@@ -20,15 +20,14 @@ export default class UserController {
       const {
         username, firstname, lastname, email, password, phone
       } = req.body;
-      const Email = email.toLowerCase();
-      const emailExist = await models.User.findOne({ where: { email } });
+      const emailExist: IUser | null = await models.User.findOne({ where: { email } });
       if (emailExist) return errorResponse(res, 409, "email already registered by another user.");
       const phoneExist = await models.User.findOne({ where: { phone } });
       if (phoneExist) return errorResponse(res, 409, "Phone already registered by another user.");
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await models.User.create({
-        username, firstname, lastname, email: Email, password: hashedPassword, phone
+        username, firstname, lastname, email: email.toLowerCase(), password: hashedPassword, phone, 
       });
       const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
       await models.Otp.create({ email, token: otp, userId: user.id });
@@ -54,8 +53,8 @@ export default class UserController {
       if (!otp) { return errorResponse(res, 404, "Otp does not exist."); }
       if (otp.expired) { return errorResponse(res, 409, "Otp has already been used."); }
 
-      await models.User.update({ verified: true, active: true }, { where: { email: otp.email } });
-      await models.Otp.update({ expired: true }, { where: { email: otp.email } });
+      await models.User.update({ verified: true, active: true }, { where: { email: otp.userId } });
+      await models.Otp.update({ expired: true }, { where: { email: otp.userId } });
       return successResponse(
         res,
         200,
@@ -91,13 +90,10 @@ export default class UserController {
       if (!validpass) return errorResponse(res, 404, "Password is not correct!.");
 
       const {
-        id, firstname, lastname, email, phone
+        id, email, phone
       } = user;
       const token = await generateToken({ id, email, phone });
-      const userDetails = {
-        id, email, phone, username, firstname, lastname,
-      };
-      return successResponse(res, 200, "Logged in successfully", { userDetails, token });
+      return successResponse(res, 200, "Logged in successfully", { user, token });
     } catch (error) {
       handleError(error, req);
       return errorResponse(res, 500, "Server error.");
@@ -195,7 +191,7 @@ export default class UserController {
         return errorResponse(res, 409, "Password mismatch.");
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      await models.User.update({ password: hashedPassword }, { where: { email: otp.email } });
+      await models.User.update({ password: hashedPassword }, { where: { email: otp.userId } });
       return successResponse(res, 200, "Password reset successfully, Kindly login.");
     } catch (error) {
       handleError(error, req);
@@ -291,8 +287,8 @@ export default class UserController {
     try {
       const { otp } = req.body;
       const otpDey: IOtp | null = await models.Otp.findOne({ where: { token: otp } });
-      console.log(otpDey?.email);
-      const user = await models.User.findOne({ where: { email: otpDey?.email } });
+      console.log(otpDey?.userId);
+      const user = await models.User.findOne({ where: { email: otpDey?.userId } });
       if (user) {
         user.active = true;
         await user.save();

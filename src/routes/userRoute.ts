@@ -4,7 +4,7 @@ import Authentication from "../middlewares/auth";
 import validator from "../middlewares/validator";
 import parser from "../middlewares/upload";
 import {
-  validateSignup, validateLogin
+  validateSignup, validateLogin, validateUpdate
 } from "../validations/users";
 
 const router = Router();
@@ -23,7 +23,7 @@ router.post("/reactivate", reactivateUser);
 router.get("/profile", verifyToken, getProfile);
 router.get("/deactivate", verifyToken, deactivateUser);
 
-router.patch("/update", verifyToken, updateProfile);
+router.patch("/update", validator(validateUpdate), verifyToken, updateProfile);
 router.patch("/recover", recover);
 router.patch("/reset", reset);
 router.patch("/picture", verifyToken, parser.single("image"), uploadProfilePicture);

@@ -6,12 +6,14 @@ export default class User extends Model {
    public username!: string;
    public firstname!: string;
    public lastname!: string;
-   public email!: string;
-   public verified!: boolean;
-   public active!: boolean;
-   public password!: string;
    public phone!: string;
-   public photo!: string;
+   public dob!: string;
+   public email!: string;
+   public balance!: number;
+   public location!: string;
+   public password!: string;
+   public active!: boolean;
+   public verified!: boolean;
 
    static associate(models: any) {
       User.hasOne(models.Otp, {
@@ -19,7 +21,7 @@ export default class User extends Model {
       })
       User.hasMany(models.Credit, {
         foreignKey: "userId",
-        as: "recipientId"
+        as: "recipient"
       })
    }
 }
@@ -30,32 +32,62 @@ User.init({
     defaultValue: UUIDV4,
     primaryKey: true
   },
+  googleId: {
+    type: DataTypes.STRING,
+  },
   username: {
     type: DataTypes.STRING,
-    allowNull: false
+    unique: true,
+    validate: {
+      notEmpty: true,
+      len: {
+        args: [1, 20],
+        msg: "Username should not be empty"
+      }
+    }
   },
   firstname: {
     type: DataTypes.STRING,
-    allowNull: false
+    validate: {
+      notEmpty: true,
+      len: [1, 20]
+    }
   },
   lastname: {
     type: DataTypes.STRING,
-    allowNull: false
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
+    validate: {
+      notEmpty: true,
+      len: [1, 20]
+    }
   },
   phone: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    unique: true
   },
-  photo: {
+  dob: {
     type: DataTypes.STRING,
+  },
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+    validate: {
+      notEmpty: true,
+      isEmail: true
+    }
+  },
+  balance: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    validate: {
+      min: 0,
+    }
+  },
+  location: {
+    type: DataTypes.STRING,
+  },
+  password: {
+    type: DataTypes.STRING
   },
   active: {
     type: DataTypes.BOOLEAN,
