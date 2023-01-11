@@ -31,3 +31,10 @@ export interface IOtp {
   token: number
   expired: boolean
 }
+export interface INotifications {
+  id?: string
+  message?: string
+  owner?: string
+  title?: string
+  status?: string
+}
